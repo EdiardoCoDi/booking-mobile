@@ -1,0 +1,16 @@
+screenshots/
+app/*.apk.*
+poGenerated/
+allure-results/
+junit-report/
+junit-results/
+allure-report/
+node_modules/
+typeScript/
+typescript/
+reports/
+.vscode
+.tsbuild
+*.log
+.DS_Store
+.env

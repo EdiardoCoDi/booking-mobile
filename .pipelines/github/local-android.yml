@@ -1,0 +1,46 @@
+name: mobileLocalTest
+# on push we will trigger our code
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Test environment: qa, stress, preprod'
+      tags:
+        description: 'Test scenario tags'
+jobs:
+  build:
+    runs-on: macos-latest # the machine type
+    strategy: # we are using strategy if we need to run on parallel with different devices and version
+      matrix:
+        api-level: [29] #Google api level for example [25,23,28]
+        target: [default]
+    steps:
+    - uses: actions/checkout@v2 #checkout the code
+    - name: Set up JDK 1.8
+      uses: actions/setup-java@v1
+      with:
+        java-version: 1.8
+    - name: Set Runner Permissions
+      run: |
+        chmod +x ./scripts/runTest.sh
+    - name: Run Android Emulator
+      uses: reactivecircus/android-emulator-runner@v1 # install and create the Emulator
+      with:
+        api-level: ${{ matrix.api-level }}
+        target: ${{ matrix.target }}
+        arch: x86_64
+        profile: Nexus 6
+        script: ./scripts/runTest.sh
+    - name: Allure Reports
+      if: ${{ success() || failure() }}
+      run: |
+        chmod +x ./scripts/reportTest.sh
+        ./scripts/reportTest.sh
+    - name: Export Allure report
+      if: ${{ success() || failure() }}
+      uses: actions/upload-artifact@v2
+      with:
+        name: allure-report
+        path: allure-report/*
